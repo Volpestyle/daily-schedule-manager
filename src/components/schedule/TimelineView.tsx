@@ -1,18 +1,19 @@
 import React, { useState, useRef, useCallback, useMemo } from "react";
-import { Activity } from "@/types/schedule";
+import { Activity, TimeConflict } from "@/types/schedule";
 import { getCategoryColor } from "@/lib/utils";
 
-interface TimelineViewProps {
+type TimelineViewProps = {
   activities: Activity[];
+  timeConflicts: TimeConflict[];
   onActivityClick: (activity: Activity) => void;
-}
+};
 
 const HOUR_HEIGHT = 60;
 const TOTAL_TIMELINE_HEIGHT = 24 * HOUR_HEIGHT;
 
 const getTimelinePosition = (time: string): number => {
   const [hours, minutes] = time.split(":").map(Number);
-  return (hours * 60 + minutes) * 2;
+  return (hours * HOUR_HEIGHT + minutes) * 2;
 };
 
 const HourMarkers = () => (
@@ -34,15 +35,17 @@ const HourMarkers = () => (
 // Simple component without memo since parent handles memoization
 const ActivityItem = ({
   item,
+  isConflict,
   onClick,
 }: {
   item: Activity;
+  isConflict: boolean;
   onClick: (activity: Activity) => void;
 }) => (
   <div
-    className={`absolute left-14 rounded-lg p-2 ${getCategoryColor(
-      item.category[0]
-    )} 
+    className={`absolute left-14 rounded-lg p-2 ${
+      !!isConflict && `ring-2 ring-red-500`
+    } ${getCategoryColor(item.category[0])} 
       transition-all hover:opacity-90 cursor-pointer`}
     style={{
       top: `${getTimelinePosition(item.time)}px`,
@@ -58,7 +61,11 @@ const ActivityItem = ({
   </div>
 );
 
-const TimelineView = ({ activities, onActivityClick }: TimelineViewProps) => {
+const TimelineView = ({
+  activities,
+  timeConflicts,
+  onActivityClick,
+}: TimelineViewProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -91,9 +98,20 @@ const TimelineView = ({ activities, onActivityClick }: TimelineViewProps) => {
 
   const renderedActivities = useMemo(
     () =>
-      activities.map((item) => (
-        <ActivityItem key={item.id} item={item} onClick={onActivityClick} />
-      )),
+      activities.map((item) => {
+        const isConflict = timeConflicts.some(
+          ({ activity1, activity2 }) =>
+            activity1 === item.activity || activity2 === item.activity
+        );
+        return (
+          <ActivityItem
+            key={item.id}
+            item={item}
+            isConflict={isConflict}
+            onClick={onActivityClick}
+          />
+        );
+      }),
     [activities, onActivityClick]
   );
 

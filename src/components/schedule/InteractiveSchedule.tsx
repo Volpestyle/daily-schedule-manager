@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -15,7 +15,8 @@ import ActivityForm from "./ActivityForm";
 import TimeConflictAlert from "./TimeConflictAlert";
 import ActivityList from "./ActivityList";
 import TimelineView from "./TimelineView";
-// import { initialActivities } from "@/constants/hardcoded-schedules";
+import { initialActivities } from "@/constants/hardcoded-schedules";
+import { SettingsMenu } from "../settingsMenu";
 
 const defaultActivity: Activity = {
   time: "",
@@ -33,12 +34,26 @@ enum ViewModes {
 
 type ViewMode = keyof typeof ViewModes;
 
+// Helper functions for time manipulation
+const timeToMinutes = (time: string): number => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+const createInterval = (activity: Activity) => {
+  const start = timeToMinutes(activity.time);
+  return {
+    start,
+    end: start + activity.duration,
+    activity,
+  };
+};
+
 const InteractiveSchedule: React.FC = () => {
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [draggedItem, setDraggedItem] = useState<Activity | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
-  const [timeConflicts, setTimeConflicts] = useState<TimeConflict[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>(ViewModes.list);
   const [currentActivity, setCurrentActivity] =
     useState<Activity>(defaultActivity);
@@ -52,7 +67,7 @@ const InteractiveSchedule: React.FC = () => {
     return (total / 60).toFixed(1);
   };
 
-  const calculateCategoryHours = () => {
+  const categoryHours = useMemo(() => {
     const categoryMinutes = activities.reduce((acc, activity) => {
       acc[activity.category[0]] =
         (acc[activity.category[0]] || 0) + activity.duration;
@@ -65,40 +80,36 @@ const InteractiveSchedule: React.FC = () => {
         hours: (minutes / 60).toFixed(1),
       }))
       .filter((cat) => parseFloat(cat.hours) > 0);
-  };
+  }, [activities]);
 
   // Time validation
-  const validateTimeOverlap = () => {
+  // Optimized time conflict detection - O(n log n) instead of O(n²)
+  const timeConflicts = useMemo(() => {
+    if (activities.length < 2) return [];
+
+    // Convert to intervals and sort by start time - O(n log n)
+    const intervals = activities
+      .map(createInterval)
+      .sort((a, b) => a.start - b.start);
+
     const conflicts: TimeConflict[] = [];
-    activities.forEach((activity1, i) => {
-      const start1 = new Date(`2024-01-01 ${activity1.time}`);
-      const end1 = new Date(start1.getTime() + activity1.duration * 60000);
 
-      activities.forEach((activity2, j) => {
-        if (i !== j) {
-          const start2 = new Date(`2024-01-01 ${activity2.time}`);
-          const end2 = new Date(start2.getTime() + activity2.duration * 60000);
+    // Linear scan through sorted intervals - O(n)
+    for (let i = 1; i < intervals.length; i++) {
+      const current = intervals[i];
+      const previous = intervals[i - 1];
 
-          if (
-            (start1 >= start2 && start1 < end2) ||
-            (end1 > start2 && end1 <= end2) ||
-            (start1 <= start2 && end1 >= end2)
-          ) {
-            conflicts.push({
-              activity1: activity1.activity,
-              activity2: activity2.activity,
-              time1: activity1.time,
-              time2: activity2.time,
-            });
-          }
-        }
-      });
-    });
-    setTimeConflicts([...new Set(conflicts)]);
-  };
+      if (current.start < previous.end) {
+        conflicts.push({
+          activity1: previous.activity.activity,
+          activity2: current.activity.activity,
+          time1: previous.activity.time,
+          time2: current.activity.time,
+        });
+      }
+    }
 
-  useEffect(() => {
-    validateTimeOverlap();
+    return conflicts;
   }, [activities]);
 
   const handleDragStart = (
@@ -158,7 +169,11 @@ const InteractiveSchedule: React.FC = () => {
       );
     } else {
       const newId = Math.max(...activities.map((a) => a.id), 0) + 1;
-      setActivities([...activities, { ...currentActivity, id: newId }]);
+      setActivities(
+        [...activities, { ...currentActivity, id: newId }].sort(
+          (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time)
+        )
+      );
     }
     setIsModalOpen(false);
     setEditingActivity(null);
@@ -176,6 +191,8 @@ const InteractiveSchedule: React.FC = () => {
             </div>
           </div>
           <div className="flex gap-2">
+            <SettingsMenu />
+
             <Dialog
               open={isModalOpen}
               onOpenChange={(open) => {
@@ -225,6 +242,7 @@ const InteractiveSchedule: React.FC = () => {
           {viewMode === "list" ? (
             <ActivityList
               activities={activities}
+              timeConflicts={timeConflicts}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               onDragOver={handleDragOver}
@@ -235,21 +253,23 @@ const InteractiveSchedule: React.FC = () => {
           ) : (
             <TimelineView
               activities={activities}
+              timeConflicts={timeConflicts}
               onActivityClick={handleEdit}
             />
           )}
-
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-medium mb-2">Time Distribution</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {calculateCategoryHours().map(({ category, hours }, index) => (
-                <div key={index} className="flex justify-between text-sm">
-                  <span>{category}:</span>
-                  <span>{hours} hours</span>
-                </div>
-              ))}
+          {!!categoryHours.length && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-medium mb-2">Time Distribution</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {categoryHours.map(({ category, hours }, index) => (
+                  <div key={index} className="flex justify-between text-sm">
+                    <span>{category}:</span>
+                    <span>{hours} hours</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

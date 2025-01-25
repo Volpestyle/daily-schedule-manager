@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Activity, Category, Categories } from "@/types/schedule";
+import { useSettings } from "@/contexts/SettingsContext";
+import { to24Hour } from "@/lib/timeUtils";
 
 interface ActivityFormProps {
   currentActivity: Activity;
@@ -19,28 +21,68 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
   onSubmit,
   isEditing,
 }) => {
+  const { use24Hour } = useSettings();
+  const [timeInput, setTimeInput] = useState("");
+  const [meridiem, setMeridiem] = useState<"AM" | "PM">("AM");
+
   const handleInputChange = (
     key: keyof Activity,
     value: string | number | boolean
   ) => {
-    setCurrentActivity((prev: any) => ({
+    setCurrentActivity((prev: Activity) => ({
       ...prev,
       [key]: value,
     }));
   };
 
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const digits = value.replace(/[^\d]/g, "").slice(0, 4);
+    let formatted = digits;
+
+    // Format with colon
+    if (digits.length > 2) {
+      formatted = digits.slice(0, 2) + ":" + digits.slice(2);
+    }
+
+    setTimeInput(formatted);
+
+    // If we have a valid time format, update the activity
+    if (/^\d{2}:\d{2}$/.test(formatted)) {
+      const timeValue = use24Hour ? formatted : `${formatted} ${meridiem}`;
+      handleInputChange("time", to24Hour(timeValue));
+    }
+  };
+
   return (
     <div className="grid gap-4 py-4">
       <div className="grid gap-2">
-        <Label htmlFor="time">Start Time (HH:MM)</Label>
-        <Input
-          id="time"
-          value={currentActivity.time}
-          onChange={(e) => handleInputChange("time", e.target.value)}
-          placeholder="09:00"
-          pattern="[0-2][0-9]:[0-5][0-9]"
-        />
+        <Label htmlFor="time">Start Time</Label>
+        <div className="flex gap-2">
+          <Input
+            id="time"
+            value={timeInput}
+            onChange={handleTimeChange}
+            placeholder={use24Hour ? "14:30" : "02:30"}
+            className="flex-1"
+          />
+          {!use24Hour && (
+            <select
+              value={meridiem}
+              onChange={(e) => setMeridiem(e.target.value as "AM" | "PM")}
+              className="w-20 rounded-md border border-input bg-background px-3"
+            >
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          )}
+        </div>
+        <div className="text-sm text-gray-500">
+          Format: {use24Hour ? "HH:MM (24-hour)" : "HH:MM"}
+        </div>
       </div>
+
+      {/* Rest of the form remains the same */}
       <div className="grid gap-2">
         <Label htmlFor="duration">Duration (minutes)</Label>
         <Input

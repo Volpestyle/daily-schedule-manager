@@ -1,11 +1,14 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Edit2, GripHorizontal, Trash2 } from "lucide-react";
-import { Activity } from "@/types/schedule";
+import { Activity, TimeConflict } from "@/types/schedule";
 import { getCategoryColor } from "@/lib/utils";
+import { to12Hour } from "@/lib/timeUtils";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface ActivityListProps {
   activities: Activity[];
+  timeConflicts: TimeConflict[];
   onDragStart: (e: React.DragEvent<HTMLDivElement>, activity: Activity) => void;
   onDragEnd: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
@@ -19,6 +22,7 @@ interface ActivityListProps {
 
 const ActivityList: React.FC<ActivityListProps> = ({
   activities,
+  timeConflicts,
   onDragStart,
   onDragEnd,
   onDragOver,
@@ -26,6 +30,8 @@ const ActivityList: React.FC<ActivityListProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { use24Hour } = useSettings();
+
   return (
     <div className="space-y-2">
       {activities
@@ -40,13 +46,16 @@ const ActivityList: React.FC<ActivityListProps> = ({
             onDrop={(e) => onDrop(e, item)}
             className={`p-3 rounded-lg flex items-center gap-3 cursor-move 
               ${getCategoryColor(
-                item.category
+                item.category[0]
               )} transition-all hover:opacity-90`}
           >
             <GripHorizontal className="flex-shrink-0 w-4 h-4 text-gray-500" />
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className="font-medium">{item.time}</span>
+                <span className="font-medium">
+                  {use24Hour ? item.time : to12Hour(item.time)} -{" "}
+                  {item.activity}
+                </span>
                 {item.important && (
                   <AlertCircle className="text-red-500 w-4 h-4" />
                 )}

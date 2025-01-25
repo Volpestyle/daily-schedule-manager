@@ -1,10 +1,13 @@
 import { InteractiveSchedule } from "./components/schedule";
+import { SettingsProvider } from "./contexts/SettingsContext";
 
 function App() {
   return (
-    <div className="min-h-screen bg-background p-8">
-      <InteractiveSchedule />
-    </div>
+    <SettingsProvider>
+      <div className="min-h-screen bg-background p-8">
+        <InteractiveSchedule />
+      </div>
+    </SettingsProvider>
   );
 }
 
