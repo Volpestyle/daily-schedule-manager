@@ -10,68 +10,38 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
-import { Activity, TimeConflict, ActivityFormData } from "@/types/schedule";
+import { Activity, Categories, TimeConflict } from "@/types/schedule";
 import ActivityForm from "./ActivityForm";
 import TimeConflictAlert from "./TimeConflictAlert";
 import ActivityList from "./ActivityList";
 import TimelineView from "./TimelineView";
+// import { initialActivities } from "@/constants/hardcoded-schedules";
 
-const emptyActivity: ActivityFormData = {
+const defaultActivity: Activity = {
   time: "",
   duration: 30,
   activity: "",
-  category: "Personal",
+  category: [Categories.Personal],
   important: false,
+  id: 0,
 };
 
-const initialActivities: Activity[] = [
-  {
-    id: 1,
-    time: "07:00",
-    duration: 60,
-    activity: "Wake up, morning routine, quick walk with dog",
-    category: "Personal",
-  },
-  {
-    id: 2,
-    time: "08:00",
-    duration: 45,
-    activity: "Breakfast & meal prep for the day",
-    category: "Health",
-  },
-  {
-    id: 3,
-    time: "08:45",
-    duration: 15,
-    activity: "Dog's breakfast",
-    category: "Pet Care",
-    important: true,
-  },
-  {
-    id: 4,
-    time: "09:00",
-    duration: 120,
-    activity: "Technical interview prep / coding practice",
-    category: "Career",
-  },
-  {
-    id: 5,
-    time: "11:00",
-    duration: 60,
-    activity: "Gym workout",
-    category: "Health",
-  },
-];
+enum ViewModes {
+  list = "list",
+  timeline = "timeline",
+}
+
+type ViewMode = keyof typeof ViewModes;
 
 const InteractiveSchedule: React.FC = () => {
-  const [activities, setActivities] = useState<Activity[]>(initialActivities);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [draggedItem, setDraggedItem] = useState<Activity | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [timeConflicts, setTimeConflicts] = useState<TimeConflict[]>([]);
-  const [viewMode, setViewMode] = useState<"list" | "timeline">("list");
+  const [viewMode, setViewMode] = useState<ViewMode>(ViewModes.list);
   const [currentActivity, setCurrentActivity] =
-    useState<ActivityFormData>(emptyActivity);
+    useState<Activity>(defaultActivity);
 
   // Time calculations
   const calculateTotalHours = (): string => {
@@ -84,8 +54,8 @@ const InteractiveSchedule: React.FC = () => {
 
   const calculateCategoryHours = () => {
     const categoryMinutes = activities.reduce((acc, activity) => {
-      acc[activity.category] =
-        (acc[activity.category] || 0) + activity.duration;
+      acc[activity.category[0]] =
+        (acc[activity.category[0]] || 0) + activity.duration;
       return acc;
     }, {} as Record<string, number>);
 
@@ -192,7 +162,7 @@ const InteractiveSchedule: React.FC = () => {
     }
     setIsModalOpen(false);
     setEditingActivity(null);
-    setCurrentActivity(emptyActivity);
+    setCurrentActivity(defaultActivity);
   };
 
   return (
@@ -211,7 +181,7 @@ const InteractiveSchedule: React.FC = () => {
               onOpenChange={(open) => {
                 if (!open) {
                   setEditingActivity(null);
-                  setCurrentActivity(emptyActivity);
+                  setCurrentActivity(defaultActivity);
                 }
                 setIsModalOpen(open);
               }}
@@ -238,7 +208,7 @@ const InteractiveSchedule: React.FC = () => {
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="relative">
           <TimeConflictAlert conflicts={timeConflicts} />
 
           <Tabs

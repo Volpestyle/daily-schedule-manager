@@ -2,25 +2,16 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ActivityFormData, Category } from "@/types/schedule";
+import { Activity, Category, Categories } from "@/types/schedule";
 
 interface ActivityFormProps {
-  currentActivity: ActivityFormData;
-  setCurrentActivity: React.Dispatch<React.SetStateAction<ActivityFormData>>;
+  currentActivity: Activity;
+  setCurrentActivity: React.Dispatch<React.SetStateAction<Activity>>;
   onSubmit: () => void;
   isEditing: boolean;
 }
 
-const categories: Category[] = [
-  "Career",
-  "Portfolio",
-  "Health",
-  "Content",
-  "Pet Care",
-  "Personal",
-  "Leisure",
-  "Flexible",
-];
+const categories: Category[] = Object.values(Categories);
 
 const ActivityForm: React.FC<ActivityFormProps> = ({
   currentActivity,
@@ -29,10 +20,10 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
   isEditing,
 }) => {
   const handleInputChange = (
-    key: keyof ActivityFormData,
+    key: keyof Activity,
     value: string | number | boolean
   ) => {
-    setCurrentActivity((prev) => ({
+    setCurrentActivity((prev: any) => ({
       ...prev,
       [key]: value,
     }));
