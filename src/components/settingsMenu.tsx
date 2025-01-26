@@ -1,16 +1,16 @@
-import React from "react";
+import React from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useSettings } from "@/contexts/SettingsContext";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Settings } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useSettings } from '@/contexts/SettingsContext';
 
 export const SettingsToggle = () => {
   const { use24Hour, toggleTimeFormat } = useSettings();
@@ -23,7 +23,7 @@ export const SettingsToggle = () => {
         onCheckedChange={toggleTimeFormat}
       />
       <Label htmlFor="time-format">
-        Use 24-hour format ({use24Hour ? "23:59" : "11:59 PM"})
+        Use 24-hour format ({use24Hour ? '23:59' : '11:59 PM'})
       </Label>
     </div>
   );

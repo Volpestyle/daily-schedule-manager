@@ -1,7 +1,7 @@
-import React from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { TimeConflict } from "@/types/schedule";
+import React from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import { TimeConflict } from '@/types/schedule';
 
 interface TimeConflictAlertProps {
   conflicts: TimeConflict[];
@@ -17,7 +17,7 @@ const TimeConflictAlert: React.FC<TimeConflictAlertProps> = ({ conflicts }) => {
         Time conflicts detected:
         {conflicts.map((conflict, i) => (
           <div key={i} className="text-sm">
-            {conflict.activity1} ({conflict.time1}) overlaps with{" "}
+            {conflict.activity1} ({conflict.time1}) overlaps with{' '}
             {conflict.activity2} ({conflict.time2})
           </div>
         ))}

@@ -1,42 +1,42 @@
-import React, { useState, useMemo } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import React, { useState, useMemo } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus } from "lucide-react";
-import { Activity, Categories, TimeConflict } from "@/types/schedule";
-import ActivityForm from "./ActivityForm";
-import TimeConflictAlert from "./TimeConflictAlert";
-import ActivityList from "./ActivityList";
-import TimelineView from "./TimelineView";
-import { initialActivities } from "@/constants/hardcoded-schedules";
-import { SettingsMenu } from "../settingsMenu";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus } from 'lucide-react';
+import { Activity, Categories, TimeConflict } from '@/types/schedule';
+import ActivityForm from './ActivityForm';
+import TimeConflictAlert from './TimeConflictAlert';
+import ActivityList from './ActivityList';
+import TimelineView from './TimelineView';
+import { initialActivities } from '@/constants/hardcoded-schedules';
+import { SettingsMenu } from '../settingsMenu';
 
 const defaultActivity: Activity = {
-  time: "",
+  time: '',
   duration: 30,
-  activity: "",
+  activity: '',
   category: [Categories.Personal],
   important: false,
   id: 0,
 };
 
 enum ViewModes {
-  list = "list",
-  timeline = "timeline",
+  list = 'list',
+  timeline = 'timeline',
 }
 
 type ViewMode = keyof typeof ViewModes;
 
 // Helper functions for time manipulation
 const timeToMinutes = (time: string): number => {
-  const [hours, minutes] = time.split(":").map(Number);
+  const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
 };
 
@@ -68,18 +68,21 @@ const InteractiveSchedule: React.FC = () => {
   };
 
   const categoryHours = useMemo(() => {
-    const categoryMinutes = activities.reduce((acc, activity) => {
-      acc[activity.category[0]] =
-        (acc[activity.category[0]] || 0) + activity.duration;
-      return acc;
-    }, {} as Record<string, number>);
+    const categoryMinutes = activities.reduce(
+      (acc, activity) => {
+        acc[activity.category[0]] =
+          (acc[activity.category[0]] || 0) + activity.duration;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     return Object.entries(categoryMinutes)
       .map(([category, minutes]) => ({
         category,
         hours: (minutes / 60).toFixed(1),
       }))
-      .filter((cat) => parseFloat(cat.hours) > 0);
+      .filter(cat => parseFloat(cat.hours) > 0);
   }, [activities]);
 
   // Time validation
@@ -117,11 +120,11 @@ const InteractiveSchedule: React.FC = () => {
     activity: Activity
   ) => {
     setDraggedItem(activity);
-    (e.currentTarget as HTMLDivElement).style.opacity = "0.5";
+    (e.currentTarget as HTMLDivElement).style.opacity = '0.5';
   };
 
   const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
-    (e.currentTarget as HTMLDivElement).style.opacity = "1";
+    (e.currentTarget as HTMLDivElement).style.opacity = '1';
     setDraggedItem(null);
   };
 
@@ -135,10 +138,10 @@ const InteractiveSchedule: React.FC = () => {
 
     const newActivities = [...activities];
     const draggedIndex = activities.findIndex(
-      (item) => item.id === draggedItem.id
+      item => item.id === draggedItem.id
     );
     const targetIndex = activities.findIndex(
-      (item) => item.id === targetActivity.id
+      item => item.id === targetActivity.id
     );
 
     newActivities.splice(draggedIndex, 1);
@@ -157,18 +160,18 @@ const InteractiveSchedule: React.FC = () => {
   };
 
   const handleDelete = (activityId: number) => {
-    setActivities(activities.filter((a) => a.id !== activityId));
+    setActivities(activities.filter(a => a.id !== activityId));
   };
 
   const handleSubmit = () => {
     if (editingActivity) {
       setActivities(
-        activities.map((a) =>
+        activities.map(a =>
           a.id === editingActivity.id ? { ...currentActivity, id: a.id } : a
         )
       );
     } else {
-      const newId = Math.max(...activities.map((a) => a.id), 0) + 1;
+      const newId = Math.max(...activities.map(a => a.id), 0) + 1;
       setActivities(
         [...activities, { ...currentActivity, id: newId }].sort(
           (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time)
@@ -195,7 +198,7 @@ const InteractiveSchedule: React.FC = () => {
 
             <Dialog
               open={isModalOpen}
-              onOpenChange={(open) => {
+              onOpenChange={open => {
                 if (!open) {
                   setEditingActivity(null);
                   setCurrentActivity(defaultActivity);
@@ -211,7 +214,7 @@ const InteractiveSchedule: React.FC = () => {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
-                    {editingActivity ? "Edit Activity" : "Add New Activity"}
+                    {editingActivity ? 'Edit Activity' : 'Add New Activity'}
                   </DialogTitle>
                 </DialogHeader>
                 <ActivityForm
@@ -230,7 +233,7 @@ const InteractiveSchedule: React.FC = () => {
 
           <Tabs
             value={viewMode}
-            onValueChange={(value) => setViewMode(value as "list" | "timeline")}
+            onValueChange={value => setViewMode(value as 'list' | 'timeline')}
             className="mb-4"
           >
             <TabsList>
@@ -239,7 +242,7 @@ const InteractiveSchedule: React.FC = () => {
             </TabsList>
           </Tabs>
 
-          {viewMode === "list" ? (
+          {viewMode === 'list' ? (
             <ActivityList
               activities={activities}
               timeConflicts={timeConflicts}

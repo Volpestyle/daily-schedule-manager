@@ -1,12 +1,12 @@
 export enum Categories {
-  Career = "Career",
-  Portfolio = "Portfolio",
-  Health = "Health",
-  Content = "Content",
-  PetCare = "Pet Care",
-  Personal = "Personal",
-  Leisure = "Leisure",
-  Flexible = "Flexible",
+  Career = 'Career',
+  Portfolio = 'Portfolio',
+  Health = 'Health',
+  Content = 'Content',
+  PetCare = 'Pet Care',
+  Personal = 'Personal',
+  Leisure = 'Leisure',
+  Flexible = 'Flexible',
 }
 
 export type Category = Categories;
@@ -25,3 +25,10 @@ export interface TimeConflict {
   time1: string;
   time2: string;
 }
+
+export enum Meridiem {
+  AM = 'AM',
+  PM = 'PM',
+}
+
+export type MeridiemType = `${Meridiem}`; // This creates a union type 'AM' | 'PM'

@@ -1,10 +1,10 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, Edit2, GripHorizontal, Trash2 } from "lucide-react";
-import { Activity, TimeConflict } from "@/types/schedule";
-import { getCategoryColor } from "@/lib/utils";
-import { to12Hour } from "@/lib/timeUtils";
-import { useSettings } from "@/contexts/SettingsContext";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, Edit2, GripHorizontal, Trash2 } from 'lucide-react';
+import { Activity, TimeConflict } from '@/types/schedule';
+import { getCategoryColor } from '@/lib/utils';
+import { to12Hour } from '@/lib/timeUtils';
+import { useSettings } from '@/contexts/SettingsContext';
 
 interface ActivityListProps {
   activities: Activity[];
@@ -36,14 +36,14 @@ const ActivityList: React.FC<ActivityListProps> = ({
     <div className="space-y-2">
       {activities
         .sort((a, b) => a.time.localeCompare(b.time))
-        .map((item) => (
+        .map(item => (
           <div
             key={item.id}
             draggable
-            onDragStart={(e) => onDragStart(e, item)}
+            onDragStart={e => onDragStart(e, item)}
             onDragEnd={onDragEnd}
             onDragOver={onDragOver}
-            onDrop={(e) => onDrop(e, item)}
+            onDrop={e => onDrop(e, item)}
             className={`p-3 rounded-lg flex items-center gap-3 cursor-move 
               ${getCategoryColor(
                 item.category[0]
@@ -53,7 +53,7 @@ const ActivityList: React.FC<ActivityListProps> = ({
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-medium">
-                  {use24Hour ? item.time : to12Hour(item.time)} -{" "}
+                  {use24Hour ? item.time : to12Hour(item.time)} -{' '}
                   {item.activity}
                 </span>
                 {item.important && (

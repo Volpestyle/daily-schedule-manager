@@ -1,5 +1,5 @@
-import { InteractiveSchedule } from "./components/schedule";
-import { SettingsProvider } from "./contexts/SettingsContext";
+import { InteractiveSchedule } from './components/schedule';
+import { SettingsProvider } from './contexts/SettingsContext';
 
 function App() {
   return (

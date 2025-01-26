@@ -1,6 +1,6 @@
-import React, { useState, useRef, useCallback, useMemo } from "react";
-import { Activity, TimeConflict } from "@/types/schedule";
-import { getCategoryColor } from "@/lib/utils";
+import React, { useState, useRef, useCallback, useMemo } from 'react';
+import { Activity, TimeConflict } from '@/types/schedule';
+import { getCategoryColor } from '@/lib/utils';
 
 type TimelineViewProps = {
   activities: Activity[];
@@ -12,7 +12,7 @@ const HOUR_HEIGHT = 60;
 const TOTAL_TIMELINE_HEIGHT = 24 * HOUR_HEIGHT;
 
 const getTimelinePosition = (time: string): number => {
-  const [hours, minutes] = time.split(":").map(Number);
+  const [hours, minutes] = time.split(':').map(Number);
   return (hours * HOUR_HEIGHT + minutes) * 2;
 };
 
@@ -25,7 +25,7 @@ const HourMarkers = () => (
         style={{ top: `${i * HOUR_HEIGHT}px` }}
       >
         <div className="w-12 text-right pr-2">
-          {String(i).padStart(2, "0")}:00
+          {String(i).padStart(2, '0')}:00
         </div>
       </div>
     ))}
@@ -50,7 +50,7 @@ const ActivityItem = ({
     style={{
       top: `${getTimelinePosition(item.time)}px`,
       height: `${item.duration * 2}px`,
-      width: "calc(100% - 4rem)",
+      width: 'calc(100% - 4rem)',
     }}
     onClick={() => onClick(item)}
   >
@@ -88,17 +88,17 @@ const TimelineView = ({
 
     const handleMouseUp = () => {
       setIsDragging(false);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   }, []);
 
   const renderedActivities = useMemo(
     () =>
-      activities.map((item) => {
+      activities.map(item => {
         const isConflict = timeConflicts.some(
           ({ activity1, activity2 }) =>
             activity1 === item.activity || activity2 === item.activity
@@ -119,7 +119,7 @@ const TimelineView = ({
     <div
       ref={containerRef}
       className="relative min-h-[300px] max-h-screen border rounded-lg"
-      style={{ height: "400px" }}
+      style={{ height: '400px' }}
     >
       <div className="absolute inset-0 overflow-y-auto">
         <div
@@ -133,13 +133,13 @@ const TimelineView = ({
       <div
         className={`absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize 
           hover:bg-gray-200 transition-colors ${
-            isDragging ? "bg-gray-300" : ""
+            isDragging ? 'bg-gray-300' : ''
           }`}
         onMouseDown={handleMouseDown}
       />
     </div>
   );
 };
-TimelineView.displayName = "TimelineView";
+TimelineView.displayName = 'TimelineView';
 
 export default TimelineView;
