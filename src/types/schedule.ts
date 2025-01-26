@@ -1,4 +1,4 @@
-export enum Categories {
+export enum DefaultCategories {
   Career = 'Career',
   Portfolio = 'Portfolio',
   Health = 'Health',
@@ -9,7 +9,7 @@ export enum Categories {
   Flexible = 'Flexible',
 }
 
-export type Category = Categories;
+export type Category = DefaultCategories | string;
 export interface Activity {
   id: number;
   time: string;

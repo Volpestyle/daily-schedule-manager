@@ -1,10 +1,9 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { Activity, TimeConflict } from '@/types/schedule';
+import { Activity } from '@/types/schedule';
 import { getCategoryColor } from '@/lib/utils';
 
 type TimelineViewProps = {
   activities: Activity[];
-  timeConflicts: TimeConflict[];
   onActivityClick: (activity: Activity) => void;
 };
 
@@ -24,9 +23,7 @@ const HourMarkers = () => (
         className="absolute left-0 flex items-center text-sm text-gray-500"
         style={{ top: `${i * HOUR_HEIGHT}px` }}
       >
-        <div className="w-12 text-right pr-2">
-          {String(i).padStart(2, '0')}:00
-        </div>
+        <div className="w-12 text-right pr-2">{String(i).padStart(2, '0')}:00</div>
       </div>
     ))}
   </>
@@ -35,17 +32,14 @@ const HourMarkers = () => (
 // Simple component without memo since parent handles memoization
 const ActivityItem = ({
   item,
-  isConflict,
   onClick,
 }: {
   item: Activity;
-  isConflict: boolean;
   onClick: (activity: Activity) => void;
 }) => (
   <div
-    className={`absolute left-14 rounded-lg p-2 ${
-      !!isConflict && `ring-2 ring-red-500`
-    } ${getCategoryColor(item.category[0])} 
+    className={`absolute left-14 rounded-lg p-2 
+     ${getCategoryColor(item.category[0])} 
       transition-all hover:opacity-90 cursor-pointer`}
     style={{
       top: `${getTimelinePosition(item.time)}px`,
@@ -61,11 +55,7 @@ const ActivityItem = ({
   </div>
 );
 
-const TimelineView = ({
-  activities,
-  timeConflicts,
-  onActivityClick,
-}: TimelineViewProps) => {
+const TimelineView = ({ activities, onActivityClick }: TimelineViewProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -98,19 +88,8 @@ const TimelineView = ({
 
   const renderedActivities = useMemo(
     () =>
-      activities.map(item => {
-        const isConflict = timeConflicts.some(
-          ({ activity1, activity2 }) =>
-            activity1 === item.activity || activity2 === item.activity
-        );
-        return (
-          <ActivityItem
-            key={item.id}
-            item={item}
-            isConflict={isConflict}
-            onClick={onActivityClick}
-          />
-        );
+      activities.map((item) => {
+        return <ActivityItem key={item.id} item={item} onClick={onActivityClick} />;
       }),
     [activities, onActivityClick]
   );
@@ -132,9 +111,7 @@ const TimelineView = ({
       </div>
       <div
         className={`absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize 
-          hover:bg-gray-200 transition-colors ${
-            isDragging ? 'bg-gray-300' : ''
-          }`}
+          hover:bg-gray-200 transition-colors ${isDragging ? 'bg-gray-300' : ''}`}
         onMouseDown={handleMouseDown}
       />
     </div>
