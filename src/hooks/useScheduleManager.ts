@@ -18,15 +18,39 @@ const createInterval = (activity: Activity) => {
   };
 };
 
+/**
+ * A custom hook that provides comprehensive schedule management functionality.
+ *
+ * This hook handles all aspects of schedule management including activity CRUD operations,
+ * automatic conflict resolution, schedule statistics calculation, and time-based sorting.
+ *
+ * @param initialActivities - Optional array of activities to initialize the schedule with
+ *
+ * Features:
+ * - Maintains a time-ordered list of activities
+ * - Automatically resolves time conflicts between activities
+ * - Calculates and updates schedule statistics (total hours, category breakdown)
+ * - Supports adding, editing, and deleting activities
+ * - Provides snap-to-previous functionality for quick scheduling
+ * - Tracks modified activities for animation purposes
+ * - Maintains correct time-based ordering of activities
+ */
 export function useScheduleManager() {
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [modifiedIds, setModifiedIds] = useState<number[]>([]);
 
-  // Shared computed values
+  /**
+   * Calculates and memoizes schedule statistics.
+   *
+   * Features:
+   * - Computes total scheduled hours
+   * - Breaks down hours by category
+   * - Updates automatically when activities change
+   * - Filters out categories with zero hours
+   * - Formats all times to one decimal place
+   */
   const stats: ScheduleStats = useMemo(() => {
-    const totalHours = (
-      activities.reduce((sum, activity) => sum + activity.duration, 0) / 60
-    ).toFixed(1);
+    const totalHours = (activities.reduce((sum, activity) => sum + activity.duration, 0) / 60).toFixed(1);
 
     const categoryMinutes = activities.reduce(
       (acc, activity) => {
@@ -102,7 +126,16 @@ export function useScheduleManager() {
     setTimeout(() => setModifiedIds([]), 1000);
   };
 
-  // Conflict resolution
+  /**
+   * Handles activity conflict resolution and automatic time adjustments.
+   *
+   * Features:
+   * - Detects overlapping time slots between activities
+   * - Automatically adjusts start times to prevent overlaps
+   * - Maintains chronological ordering of activities
+   * - Tracks modified activities for UI updates
+   * - Creates temporary highlight effect for adjusted activities
+   */
   useEffect(() => {
     if (activities.length < 2) return;
 

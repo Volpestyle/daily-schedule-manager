@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 import { Activity, DefaultCategories } from '@/types/schedule';
 import ActivityList from './ActivityList';
 import TimelineView from './TimelineView';
-import { SettingsMenu } from '../settingsMenu';
+import { SettingsMenu } from './settingsMenu';
 import ActivityModal from './ActivityModal';
 import { useScheduleManager } from '@/hooks/useScheduleManager';
 
@@ -27,22 +27,15 @@ enum ViewModes {
 type ViewMode = keyof typeof ViewModes;
 
 const InteractiveSchedule: React.FC = () => {
-  const {
-    activities,
-    modifiedIds,
-    stats,
-    setActivities,
-    setModifiedIds,
-    handleDelete,
-    handleSaveActivity,
-    handleSnapToPrevious,
-  } = useScheduleManager();
+  const { activities, modifiedIds, stats, setActivities, setModifiedIds, handleDelete, handleSaveActivity, handleSnapToPrevious } =
+    useScheduleManager();
 
   const [draggedItem, setDraggedItem] = useState<Activity | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>(ViewModes.list);
   const [currentActivity, setCurrentActivity] = useState<Activity>(defaultActivity);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [focusedActivityId, setFocusedActivityId] = useState<number | undefined>(undefined);
 
   // List view specific handlers
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, activity: Activity) => {
@@ -81,6 +74,7 @@ const InteractiveSchedule: React.FC = () => {
 
     setActivities(newActivities);
     setModifiedIds([draggedItem.id, targetActivity.id]);
+    setFocusedActivityId(draggedItem.id);
     setTimeout(() => setModifiedIds([]), 1000);
   };
 
@@ -90,6 +84,7 @@ const InteractiveSchedule: React.FC = () => {
       ...activity,
       important: activity.important || false,
     });
+    setFocusedActivityId(activity.id);
     setIsModalOpen(true);
   };
 
@@ -99,9 +94,7 @@ const InteractiveSchedule: React.FC = () => {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Interactive Daily Schedule</CardTitle>
-            <div className="text-sm text-gray-500 mt-1">
-              Total scheduled: {stats.totalHours} hours
-            </div>
+            <div className="text-sm text-gray-500 mt-1">Total scheduled: {stats.totalHours} hours</div>
           </div>
           <div className="flex gap-2">
             <SettingsMenu />
@@ -120,18 +113,17 @@ const InteractiveSchedule: React.FC = () => {
             }
             setIsModalOpen(open);
           }}
-          onSave={(activity) => handleSaveActivity(activity, editingActivity)}
+          onSave={(activity) => {
+            handleSaveActivity(activity, editingActivity);
+            setFocusedActivityId(activity.id);
+          }}
           editingActivity={editingActivity}
           currentActivity={currentActivity}
           setCurrentActivity={setCurrentActivity}
         />
 
         <CardContent className="relative">
-          <Tabs
-            value={viewMode}
-            onValueChange={(value) => setViewMode(value as ViewMode)}
-            className="mb-4"
-          >
+          <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="mb-4">
             <TabsList>
               <TabsTrigger value="list">List View</TabsTrigger>
               <TabsTrigger value="timeline">Timeline View</TabsTrigger>
@@ -151,7 +143,7 @@ const InteractiveSchedule: React.FC = () => {
               onSnapToPrevious={handleSnapToPrevious}
             />
           ) : (
-            <TimelineView activities={activities} onActivityClick={handleEdit} />
+            <TimelineView activities={activities} onActivityClick={handleEdit} focusedActivityId={focusedActivityId} />
           )}
           {!!stats.categoryHours.length && (
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
