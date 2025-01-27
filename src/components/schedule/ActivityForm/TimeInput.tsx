@@ -61,7 +61,8 @@ export const TimeInput: React.FC<TimeInputProps> = ({ initialTime, use24Hour, on
   };
 
   useEffect(() => {
-    completeAndUpdateTime();
+    if (use24Hour) return;
+    onTimeChange(to24Hour(`${timeInput} ${meridiem}`));
   }, [meridiem]);
 
   return (

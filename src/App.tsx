@@ -1,4 +1,4 @@
-import { InteractiveSchedule } from './components/schedule';
+import InteractiveSchedule from './components/schedule/InteractiveSchedule';
 import { SettingsProvider } from './contexts/SettingsContext';
 
 function App() {

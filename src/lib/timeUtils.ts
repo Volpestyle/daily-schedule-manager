@@ -55,7 +55,7 @@ export const to12Hour = (time: string): string => {
  * Converts and completes a time input string to a standardized format
  * Handles both 24-hour and 12-hour time formats
  *
- * @param timeInput - Raw time input string (e.g., "14", "2:30", "230")
+ * @param input - Raw time input string (e.g., "14", "2:30", "230")
  * @param use24Hour - Whether to use 24-hour format
  * @returns Object containing completed time string and meridiem if converted, or null if invalid
  *
@@ -65,43 +65,49 @@ export const to12Hour = (time: string): string => {
  * autoCompleteTime("25", true) // returns null
  */
 export const autoCompleteTime = (
-  timeInput: string,
+  input: string,
   use24Hour: boolean
 ): { time: string; meridiem?: MeridiemType } | null => {
   let hour: number;
-  let minute = 0;
-  let meridiem: MeridiemType = Meridiem.AM;
+  let minute: number;
 
-  // Parse input
-  if (timeInput.includes(':')) {
-    const [h, m] = timeInput.split(':').map(Number);
-    hour = h;
-    minute = m || 0;
+  if (input.includes(':')) {
+    [hour, minute] = input.split(':').map(Number);
   } else {
-    const value = parseInt(timeInput);
-    if (timeInput.length <= 2) {
-      hour = value;
+    if (input.length <= 2) {
+      hour = Number(input);
+      minute = 0;
     } else {
-      hour = Math.floor(value / 100);
-      minute = value % 100;
+      hour = Number(input.slice(0, 2));
+      minute = Number(input.slice(2));
     }
   }
 
   // Validate hours and minutes
   if (isNaN(hour) || isNaN(minute) || minute >= 60) return null;
 
+  // Track if it's PM before converting hours
+  const isPM = hour >= 12;
+
+  // Convert hour 0 to 12 in 12-hour mode
+  if (!use24Hour && hour === 0) {
+    hour = 12;
+  }
+
   // Handle 24-hour to 12-hour conversion
   if (!use24Hour && hour > 12 && hour <= 23) {
-    meridiem = Meridiem.PM;
     hour -= 12;
   } else if (hour > 23) {
     return null;
   }
 
-  // Format time string
-  const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  const paddedHour = hour.toString().padStart(2, '0');
+  const paddedMinute = minute.toString().padStart(2, '0');
 
-  return use24Hour ? { time: timeString } : { time: timeString, meridiem };
+  return {
+    time: `${paddedHour}:${paddedMinute}`,
+    meridiem: !use24Hour ? (isPM ? Meridiem.PM : Meridiem.AM) : undefined,
+  };
 };
 
 /**

@@ -67,10 +67,17 @@ const InteractiveSchedule: React.FC = () => {
     const draggedIndex = activities.findIndex((item) => item.id === draggedItem.id);
     const targetIndex = activities.findIndex((item) => item.id === targetActivity.id);
 
-    [draggedItem.time, targetActivity.time] = [targetActivity.time, draggedItem.time];
+    // Create copies to avoid mutating the original objects
+    const draggedCopy = { ...draggedItem, time: targetActivity.time };
+    const targetCopy = { ...targetActivity, time: draggedItem.time };
 
-    newActivities.splice(draggedIndex, 1);
-    newActivities.splice(targetIndex, 0, draggedItem);
+    // Remove both items
+    newActivities.splice(Math.max(draggedIndex, targetIndex), 1);
+    newActivities.splice(Math.min(draggedIndex, targetIndex), 1);
+
+    // Insert them in swapped positions
+    newActivities.splice(targetIndex, 0, draggedCopy);
+    newActivities.splice(draggedIndex, 0, targetCopy);
 
     setActivities(newActivities);
     setModifiedIds([draggedItem.id, targetActivity.id]);
